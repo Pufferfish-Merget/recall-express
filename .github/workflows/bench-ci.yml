@@ -1,0 +1,26 @@
+# merget-harness live benchmark CI: the recipe the benchmark VM discovered for
+# this corpus, run on every pull request, on main and on sema's batch branches.
+# The corpus's own workflows are removed on the mirror (docs/SCENARIOS.md "bench").
+name: bench-ci
+on:
+  push:
+    branches:
+      - "main"
+      - "sema/queue/**"
+      - "replay/**"
+  pull_request: {}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: "bench:checkout"
+        uses: actions/checkout@v4
+      - name: "bench:toolchain"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: "bench:setup"
+        run: if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - name: "bench:test"
+        run: npm test
